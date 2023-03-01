@@ -1,0 +1,27 @@
+---
+# English Translation
+# Made by @xqwtxon <https://github.com/xqwtxon>
+new-update-prefix: "&e[Update Checker]"
+update-error: "&cAn error occur when we check an update to the plugin. %s"
+update-retry-failed: "&cPlease check your connection and try again! &4Giving up..."
+new-update-found: "&eThe &6AntiVPN &6%s &eis released for &6PocketMine-MP %s!"
+new-update-details: "&bPocketMine-MP: %s to %s"
+new-update-download: "&bDownload: %s"
+no-updates-found: "&bNo updates found, Enjoy!"
+update-retry: "&bRetrying to update from github servers..."
+command-usage: "&cUsage: &e/antivpn <help/subcommand>"
+command-help: "&eWelcome to &6AntiVPN! &bHere are available commands for you:"
+command-list:
+    - "&e/antivpn help &f- &bCommand List Information"
+    - "&e/antivpn lookup <player_name> &f- &bLookup the player's ip at in-game."
+    - "&e/antivpn toggle [on/off] &f- &bToggle AntiVPN Service."
+    - "&e/antivpn ui &f- &bOpen GUI"
+command-help-1: "&bThank you for using our plugin! Kindly checkout &6/antivpn credits &bfor plugin authors/creators!"
+command-usage-lookup: "&cUsage: &e/antivpn lookup <player_name>"
+player-not-found: "&cThe player %s is not found in the server."
+not-player: "&cYou are not player to do this command."
+enabled-check: "&aSuccessfully enabled the checking for their ip."
+disabled-check: "&cSuccessfully disabled the checking for their ip"
+author-info: "&eThese are the public plugin creators/founders:"
+author-thanks: "&eThank you for using this plugin!"
+...
