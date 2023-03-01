@@ -65,7 +65,7 @@ class ProxyLoginTask extends AsyncTask {
 							return;
 						} // fix null object
 
-						if ($result["security"]["vpn"] || $result["security"]["proxy"] || $result["security"]["tor"] || $result["security"]["relay"]) {
+						if ($result["security"][0]["vpn"] || $result["security"][0]["proxy"] || $result["security"][0]["tor"] || $result["security"][0]["relay"]) {
 							$status = true;
 						}
 
@@ -81,11 +81,11 @@ class ProxyLoginTask extends AsyncTask {
 							return;
 						} // fix null object
 
-						if ($result["security"]["vpn"] || $result["security"]["proxy"] || $result["security"]["tor"] || $result["security"]["relay"]) {
+						if ($result["security"][0]["vpn"] || $result["security"][0]["proxy"] || $result["security"][0]["tor"] || $result["security"][0]["relay"]) {
 							$status = true;
 						}
 
-						$country = $result["location"]["country"];
+						$country = $result["location"][0]["country"];
 						$this->setResult([$status, $country, $err]);
 					}
 				}
@@ -112,10 +112,21 @@ class ProxyLoginTask extends AsyncTask {
 	}
 
 	public function onCompletion() : void {
-		[$status, $country, $err] = $this->getResult();
+		[$status, $country, $proxy, $err] = $this->getResult();
 
-		if ($status !== true) {
-			$this->ev->close("", AntiVPN::getInstance()->getConfig("kick-message")); // kick the player.
+		if ($status === null) {
+			AntiProxy::getInstance()->getServer()->getLogger()->notice(vsprintf(Language::translateMessage("lookup-error"), [$this->player]));
+			$this->cancelRun();
+			return;
+		}
+
+		if ($status === true) {
+			$player = AntiProxy::getInstance()->getServer()->getPlayerExact($this->player);
+			$this->ev->close(AntiProxy::getInstance()->getConfig()->get("kick-message")); // kick the player.
+			$this->cancelRun();
+		} else {
+			AntiProxy::getInstance()->getServer()->getLogger()->notice(vsprintf(Language::translateMessage("player-kicked-console"), [$this->player]));
+			$this->cancelRun();
 		}
 	}
 }

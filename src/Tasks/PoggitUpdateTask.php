@@ -73,12 +73,14 @@ class PoggitUpdateTask extends AsyncTask {
 		if ($highestVersion === null || $artifactUrl === null || $api === null) {
 			Server::getInstance()->getLogger()->critical(Language::translateMessage("new-update-prefix") . " " . vsprintf(Language::translateMessage("update-error"), ["Trying to update on github..."]));
 			$plugin->getServer()->getAsyncPool()->submitTask(new GithubUpdateTask(AntiProxy::getInstance()->getDescription()->getName(), AntiProxy::getInstance()->getDescription()->getVersion()));
+			$this->cancelRun();
 			return;
 		}
 		if ($err !== null) {
 			Server::getInstance()->getLogger()->critical(Language::translateMessage("new-update-prefix") . " " . vsprintf(Language::translateMessage("update-error"), [$err]));
 			Server::getInstance()->getLogger()->notice(Language::translateMessage("new-update-prefix") . " " . Language::translateMessage("update-retry"));
 			$plugin->getServer()->getAsyncPool()->submitTask(new GithubUpdateTask(AntiProxy::getInstance()->getDescription()->getName(), AntiProxy::getInstance()->getDescription()->getVersion()));
+			$this->cancelRun();
 			return;
 		}
 
@@ -86,8 +88,10 @@ class PoggitUpdateTask extends AsyncTask {
 			Server::getInstance()->getLogger()->warning(Language::translateMessage("new-update-prefix") . " " . vsprintf(Language::translateMessage("new-update-found"), [$highestVersion, $api]));
 			Server::getInstance()->getLogger()->warning(Language::translateMessage("new-update-prefix") . " " . vsprintf(Language::translateMessage("new-update-details"), [$api_from, $api_to]));
 			Server::getInstance()->getLogger()->warning(Language::translateMessage("new-update-prefix") . " " . vsprintf(Language::translateMessage("new-update-download"), [$artifactUrl]));
+			$this->cancelRun();
 		} else {
 			Server::getInstance()->getLogger()->notice(Language::translateMessage("new-update-prefix") . " " . Language::translateMessage("no-updates-found"));
+			$this->cancelRun();
 		}
 	}
 }

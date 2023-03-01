@@ -34,6 +34,6 @@ class ProxyListener implements Listener {
 	 * @PRIORITY HIGHEST
 	 */
 	public function onLogin(PlayerPreLoginEvent $ev) : void {
-		AntiProxy::getInstance()->getServer()->getAsyncPool()->submitTask(new ProxyTask($ev));
+		AntiProxy::getInstance()->getServer()->getAsyncPool()->submitTask(new ProxyTask($ev));  // PlayerAsyncPreLoginEvent from bukkit
 	}
 }

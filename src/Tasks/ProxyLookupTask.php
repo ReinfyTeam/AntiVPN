@@ -25,22 +25,28 @@ declare(strict_types=1);
 namespace ReinfyTeam\AntiVPN\Tasks;
 
 use pocketmine\scheduler\AsyncTask;
+use pocketmine\utils\Internet;
+use ReinfyTeam\AntiVPN\AntiProxy;
+use ReinfyTeam\AntiVPN\Utils\Language;
 use function json_decode;
 use function vsprintf;
 
 class ProxyLookupTask extends AsyncTask {
-	private $ev;
+	private $player;
 
 	private $provider;
 
 	private $api_key;
 
+	private $ip;
+
 	private const VPNAPI_IO_WITH_KEY = "https://vpnapi.io/api/%s?key=%s";
 	private const VPNAPI_IO_WITHOUT_KEY = "https://vpnapi.io/api/%s";
 	private const PROXYCHECK_IO = "https://proxycheck.io/v2/%s?vpn=1&asn=1";
 
-	public function __construct($player) {
+	public function __construct($player, $ip) {
 		$this->player = $player;
+		$this->ip = $ip;
 		$this->provider = AntiProxy::getInstance()->getConfig()->get("provider");
 		$this->api_key = AntiProxy::getInstance()->getConfig()->get("api-key");
 	}
@@ -49,7 +55,7 @@ class ProxyLookupTask extends AsyncTask {
 		switch($this->provider) {
 			case 0:
 				if ($api_key === null) {
-					$json = Internet::getUrl(vsprintf(self::VPNAPI_IO_WITHOUT_KEY, [$this->ev->getIp()]), 10, [], $err);
+					$json = Internet::getUrl(vsprintf(self::VPNAPI_IO_WITHOUT_KEY, [$this->ip]), 10, [], $err);
 
 					// SETUP VARIABLES: null
 					$status = null;
@@ -91,7 +97,7 @@ class ProxyLookupTask extends AsyncTask {
 				}
 				break;
 			case 1:
-				$json = Internet::getUrl(vsprintf(self::PROXYCHECK_IO, [$this->ev->getIP()]), 10, [], $err);
+				$json = Internet::getUrl(vsprintf(self::PROXYCHECK_IO, [$this->ip]), 10, [], $err);
 
 				// SETUP VARIABLES: null
 				$status = null;
@@ -114,8 +120,19 @@ class ProxyLookupTask extends AsyncTask {
 	public function onCompletion() : void {
 		[$status, $country, $proxy, $err] = $this->getResult();
 
-		if ($status !== true) {
-			$this->player->kick(AntiVPN::getInstance()->getConfig("kick-message"), true); // kick the player.
+		if ($status === null) {
+			AntiProxy::getInstance()->getServer()->getLogger()->notice(vsprintf(Language::translateMessage("lookup-error"), [$this->player]));
+			$this->cancelRun();
+			return;
+		}
+
+		if ($status === true) {
+			$player = AntiProxy::getInstance()->getServer()->getPlayerExact($this->player);
+			$player->kick(AntiProxy::getInstance()->getConfig()->get("kick-message"), null); // kick the player.
+			$this->cancelRun();
+		} else {
+			AntiProxy::getInstance()->getServer()->getLogger()->notice(vsprintf(Language::translateMessage("player-kicked-console"), [$this->player]));
+			$this->cancelRun();
 		}
 	}
 }

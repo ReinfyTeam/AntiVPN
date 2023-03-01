@@ -29,13 +29,13 @@ use pocketmine\command\CommandSender;
 use pocketmine\player\Player;
 use pocketmine\plugin\PluginOwned;
 use ReinfyTeam\AntiVPN\AntiProxy;
+use ReinfyTeam\AntiVPN\Tasks\ProxyLookupTask;
 use ReinfyTeam\AntiVPN\Utils\Language;
 use function count;
 use function strtolower;
 use function vsprintf;
 
 class DefaultCommand extends Command implements PluginOwned {
-	
 	public function getOwningPlugin() : AntiProxy {
 		return AntiProxy::getInstance();
 	}
@@ -66,7 +66,7 @@ class DefaultCommand extends Command implements PluginOwned {
 					return;
 				} else {
 					if (($player = $this->getOwningPlugin()->getServer()->getPlayerExact($args[1])) !== null) {
-						$this->getServer()->getAsyncPool()->submitTask(new ProxyLookupTask($player));
+						$this->getOwningPlugin()->getServer()->getAsyncPool()->submitTask(new ProxyLookupTask($player->getName(), $player->getNetworkSession()->getIp()));
 					} else {
 						$sender->sendMessage(vsprintf(Language::translateMessage("player-not-found"), [$args[1]]));
 					}
@@ -106,14 +106,14 @@ class DefaultCommand extends Command implements PluginOwned {
 				break;
 		}
 	}
-	
-	public function sendForm($player) :void {
-		$form = new SimpleForm(function(Player $player, $data){
+
+	public function sendForm($player) : void {
+		$form = new SimpleForm(function(Player $player, $data) {
 			if ($data === null) {
 				return;
 			}
-			
-			switch($data){
+
+			switch($data) {
 				case 0:
 					$this->lookupForm($player);
 					break;
@@ -121,16 +121,16 @@ class DefaultCommand extends Command implements PluginOwned {
 					$this->toggleForm($player);
 			}
 		});
-		
+
 		$form->setTitle(Language::translateMessage("gui-title"));
 		$form->setDescription(Language::translateMessage("gui-description"));
 		$form->addButton(Language::translateMessage("button-lookup"));
 		$form->addButton(Language::translateMessage("button-toggle"));
 		$form->sendForm($player);
 	}
-	
-	public function lookupForm($player) :void {
-		$form = new CustomForm(function(Player $player, $data){
+
+	public function lookupForm($player) : void {
+		$form = new CustomForm(function(Player $player, $data) {
 			if ($data === null) {
 				return;
 			} else {
@@ -141,7 +141,7 @@ class DefaultCommand extends Command implements PluginOwned {
 				}
 			}
 		});
-		
+
 		$form->setTitle(Language::translateMessage("gui-title"));
 		$form->addInput("", Language::translateMessage("gui-input-playername"), Language::translateMessage("gui-description-lookup"));
 		$form->sendForm($player);

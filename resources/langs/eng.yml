@@ -31,4 +31,6 @@ button-lookup: "&bLookup Player"
 button-toggle: "&bToggle Checking"
 gui-input-playername: "Username"
 update-warning: "&6The &eAntiVPN&6 plugin updates is &cdisabled &6which leading to get an outdated version/out of date features of plugin. &cDO NOT ASK FOR SUPPORT FOR OUTDATED PLUGIN!"
+player-kicked-console: "&6%s &chas been kicked using &6Proxy/VPN&c in the server."
+lookup-error: "&cUnable to lookup &6%s's&c ip on the server. Possible servers are down or invalid api key provided."
 ...
