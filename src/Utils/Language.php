@@ -46,12 +46,12 @@ class Language {
 		$plugin = AntiProxy::getInstance();
 		/** Check if selected language is missing. **/
 		if (!file_exists($plugin->getDataFolder() . "langs/" . Language::getSelectedLanguage() . ".yml")) {
-			throw new \Exception("Missing file in " . $plugin->getDataFolder() . "langs/" . Language::getSelectedLanguage() . ".yml");
+			throw new \RuntimeException("Missing file in " . $plugin->getDataFolder() . "langs/" . Language::getSelectedLanguage() . ".yml");
 		}
 
 		/** Check if option is exist. **/
 		if ($lang->get($option) === false) {
-			throw new \Exception("Trying to access on null.");
+			throw new \RuntimeException("Trying to access on null. Try to remove the config.");
 		}
 
 		return PluginUtils::colorize($lang->get($option));

@@ -56,8 +56,8 @@ class PoggitUpdateTask extends AsyncTask {
 				}
 				$highestVersion = $release["version"];
 				$artifactUrl = $release["artifact_url"];
-				$api_from = $release["api"][0]["from"];
-				$api_to = $release["api"][0]["to"];
+				$api_from = $release["api_from"];
+				$api_to = $release["api_to"];
 			}
 		}
 

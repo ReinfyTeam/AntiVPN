@@ -36,7 +36,7 @@ config-version: 0.0.1
 
 # API KEY on proxydetector.io
 # If you have an api key from proxydetector.io, get put it here.
-# Leave blank to use standard/guess access to proxychecker.io which is limited.
+# Leave blank to use standard/guess access to vpnapi.io which is limited.
 api-key: ""
 
 # LANGUAGE SELECTOR
@@ -59,7 +59,7 @@ check-updates: true
 # API Providers
 # We have currently supported api's websites best for your
 # servers!
-# https://vpnapi.io/ (0) - VPNAPI.io collects data all across the web, where our algorithm detects proxies, VPN, and Tor nodes. 
+# https://vpnapi.io/ (0) [API KEY NEEDED]- VPNAPI.io collects data all across the web, where our algorithm detects proxies, VPN, and Tor nodes. 
 # This gives developers and businesses a peace of mind when it comes to detecting and blocking IP addresses associated with proxies, VPNs, and Tor nodes. 
 # So far, we have worked with developers all around the world, where they use our API to enforce geo-blocking, prevent shopping or click fraud, reduce fake accounts and spam, prevent bots and malware, and more!
 # https://proxycheck.io/ (1) [NO-API KEY NEEDED] - Whether you're running an internet based business, game server or blog our detection can help you mitigate the negative effects of proxy use. 
@@ -73,7 +73,7 @@ provider: 1
 # bypass their ip that provided.
 bypass-ip:
     - "127.0.0.1"
-    - "192.168.0.0"
+    - "192.168.0.1"
 
 # BYPASS PERMISSION
 # Allows you to customize the bypass permission

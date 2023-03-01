@@ -35,6 +35,7 @@ use function strtolower;
 use function vsprintf;
 
 class DefaultCommand extends Command implements PluginOwned {
+	
 	public function getOwningPlugin() : AntiProxy {
 		return AntiProxy::getInstance();
 	}
@@ -104,5 +105,45 @@ class DefaultCommand extends Command implements PluginOwned {
 				$sender->sendMessage(Language::translateMessage("command-usage"));
 				break;
 		}
+	}
+	
+	public function sendForm($player) :void {
+		$form = new SimpleForm(function(Player $player, $data){
+			if ($data === null) {
+				return;
+			}
+			
+			switch($data){
+				case 0:
+					$this->lookupForm($player);
+					break;
+				case 1:
+					$this->toggleForm($player);
+			}
+		});
+		
+		$form->setTitle(Language::translateMessage("gui-title"));
+		$form->setDescription(Language::translateMessage("gui-description"));
+		$form->addButton(Language::translateMessage("button-lookup"));
+		$form->addButton(Language::translateMessage("button-toggle"));
+		$form->sendForm($player);
+	}
+	
+	public function lookupForm($player) :void {
+		$form = new CustomForm(function(Player $player, $data){
+			if ($data === null) {
+				return;
+			} else {
+				if (($player = $this->getOwningPlugin()->getServer()->getPlayerExact($args[0])) !== null) {
+					$this->getServer()->getAsyncPool()->submitTask(new ProxyLookupTask($player));
+				} else {
+					$sender->sendMessage(vsprintf(Language::translateMessage("player-not-found"), [$args[0]]));
+				}
+			}
+		});
+		
+		$form->setTitle(Language::translateMessage("gui-title"));
+		$form->addInput("", Language::translateMessage("gui-input-playername"), Language::translateMessage("gui-description-lookup"));
+		$form->sendForm($player);
 	}
 }
