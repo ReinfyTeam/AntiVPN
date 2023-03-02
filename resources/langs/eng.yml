@@ -33,4 +33,8 @@ gui-input-playername: "Username"
 update-warning: "&6The &eAntiVPN&6 plugin updates is &cdisabled &6which leading to get an outdated version/out of date features of plugin. &cDO NOT ASK FOR SUPPORT FOR OUTDATED PLUGIN!"
 player-kicked-console: "&6%s &chas been kicked using &6Proxy/VPN&c in the server."
 lookup-error: "&cUnable to lookup &6%s's&c ip on the server. Possible servers are down or invalid api key provided."
+lookup-error-1: "&cUnable to lookup &6%s's ip on the server. &6%s&c"
+check-error: "&cWe are unable to check &6%s's ip: &b%s&c from the server. &4%s"
+not-using-proxy: "&a%s's ip: &6%s&a is not suspected using Proxy/VPN."
+security-prefix: "&e[AntiProxy Security]&r"
 ...

@@ -25,11 +25,16 @@ declare(strict_types=1);
 namespace ReinfyTeam\AntiVPN\Tasks;
 
 use pocketmine\scheduler\AsyncTask;
+use pocketmine\utils\Internet;
+use ReinfyTeam\AntiVPN\AntiProxy;
+use ReinfyTeam\AntiVPN\Utils\Language;
 use function json_decode;
 use function vsprintf;
 
 class ProxyLoginTask extends AsyncTask {
-	private $ev;
+	private $username;
+
+	private $ip;
 
 	private $provider;
 
@@ -39,8 +44,9 @@ class ProxyLoginTask extends AsyncTask {
 	private const VPNAPI_IO_WITHOUT_KEY = "https://vpnapi.io/api/%s";
 	private const PROXYCHECK_IO = "https://proxycheck.io/v2/%s?vpn=1&asn=1";
 
-	public function __construct($ev) {
-		$this->ev = $ev;
+	public function __construct($username, $ip) {
+		$this->username = $username;
+		$this->ip = $ip;
 		$this->provider = AntiProxy::getInstance()->getConfig()->get("provider");
 		$this->api_key = AntiProxy::getInstance()->getConfig()->get("api-key");
 	}
@@ -50,34 +56,44 @@ class ProxyLoginTask extends AsyncTask {
 		$country = null;
 		$err = null;
 
-		if (AntiVPN::$enabled === false) {
+		if (AntiProxy::$enabled === false) {
 			return;
 		} // do not check until admin enabled it.
 
 		switch($this->provider) {
 			case 0:
 				if ($api_key === null) {
-					$json = Internet::getUrl(vsprintf(self::VPNAPI_IO_WITHOUT_KEY, [$this->ev->getIp()]), 10, [], $err);
+					$json = Internet::getUrl(vsprintf(self::VPNAPI_IO_WITHOUT_KEY, [$this->ip]), 10, [], $err);
 
 					if ($json !== null) {
 						$result = json_decode($json->getBody(), true);
+
 						if ($result === null) {
+							AntiProxy::getInstance()->getServer()->getLogger()->notice(Language::translateMessage("security-prefix") . " " . vsprintf(Language::translateMessage("check-error"), [$this->username, $this->ip, ($err ?? "Unknown error.")]));
+							$this->cancelRun();
 							return;
 						} // fix null object
+
 
 						if ($result["security"][0]["vpn"] || $result["security"][0]["proxy"] || $result["security"][0]["tor"] || $result["security"][0]["relay"]) {
 							$status = true;
 						}
 
-						$country = $result["location"]["country"];
+						if (!empty($result["message"]) || !empty($result["msg"])) {
+							$status = "error";
+						}
+
+						$country = ($result["location"][0]["country"] ?? "Unknown Country");
 						$this->setResult([$status, $country, $err]);
 					}
 				} else {
-					$json = Internet::getUrl(vsprintf(self::VPNAPI_IO_WITH_KEY, [$this->ev->getIp(), $this->api_key]), 10, [], $err);
+					$json = Internet::getUrl(vsprintf(self::VPNAPI_IO_WITH_KEY, [$this->ip, $this->api_key]), 10, [], $err);
 
 					if ($json !== null) {
 						$result = json_decode($json->getBody(), true);
+
 						if ($result === null) {
+							AntiProxy::getInstance()->getServer()->getLogger()->notice(Language::translateMessage("security-prefix") . " " . vsprintf(Language::translateMessage("check-error"), [$this->username, $this->ip, ($err ?? "Unknown error.")]));
 							return;
 						} // fix null object
 
@@ -85,13 +101,18 @@ class ProxyLoginTask extends AsyncTask {
 							$status = true;
 						}
 
-						$country = $result["location"][0]["country"];
+						if (!empty($result["message"]) || !empty($result["msg"])) {
+							$status = "error";
+							$err = $result["message"];
+						}
+
+						$country = ($result["location"][0]["country"] ?? "Unknown Country");
 						$this->setResult([$status, $country, $err]);
 					}
 				}
 				break;
 			case 1:
-				$json = Internet::getUrl(vsprintf(self::PROXYCHECK_IO, [$this->ev->getIP()]), 10, [], $err);
+				$json = Internet::getUrl(vsprintf(self::PROXYCHECK_IO, [$this->ip]), 10, [], $err);
 
 				// SETUP VARIABLES: null
 				$status = null;
@@ -99,12 +120,20 @@ class ProxyLoginTask extends AsyncTask {
 
 				if ($json !== null) {
 					$result = json_decode($json->getBody(), true);
+
 					if ($result === null) {
+						AntiProxy::getInstance()->getServer()->getLogger()->notice(Language::translateMessage("security-prefix") . " " . vsprintf(Language::translateMessage("check-error"), [$this->username, $this->ip, ($err ?? "Unknown error.")]));
+						$this->cancelRun();
 						return;
 					} // fix null object
 
+					if (!empty($result["message"]) || !empty($result["msg"])) {
+						$status = "error";
+						$err = $result["message"];
+					}
+
 					$status = $result["status"];
-					$country = $result[$this->ev->getIP()]["country"];
+					$country = ($result[$this->ip]["country"] ?? "Unknown Country");
 					$this->setResult([$status, $country, $err]);
 				}
 				break;
@@ -112,20 +141,18 @@ class ProxyLoginTask extends AsyncTask {
 	}
 
 	public function onCompletion() : void {
-		[$status, $country, $proxy, $err] = $this->getResult();
-
-		if ($status === null) {
-			AntiProxy::getInstance()->getServer()->getLogger()->notice(vsprintf(Language::translateMessage("lookup-error"), [$this->player]));
-			$this->cancelRun();
-			return;
-		}
+		[$status, $country, $err] = $this->getResult();
 
 		if ($status === true) {
-			$player = AntiProxy::getInstance()->getServer()->getPlayerExact($this->player);
-			$this->ev->close(AntiProxy::getInstance()->getConfig()->get("kick-message")); // kick the player.
+			$player = AntiProxy::getInstance()->getServer()->getPlayerExact($this->username);
+			$player->kick(AntiProxy::getInstance()->getConfig()->get("kick-message"), null); // kick the player.
+			AntiProxy::getInstance()->getServer()->getLogger()->notice(Language::translateMessage("security-prefix") . " " . vsprintf(Language::translateMessage("player-kicked-console"), [$this->username]));
 			$this->cancelRun();
-		} else {
-			AntiProxy::getInstance()->getServer()->getLogger()->notice(vsprintf(Language::translateMessage("player-kicked-console"), [$this->player]));
+		} elseif ($status === false) {
+			AntiProxy::getInstance()->getServer()->getLogger()->notice(Language::translateMessage("security-prefix") . " " . vsprintf(Language::translateMessage("not-using-proxy"), [$this->username, $this->ip]));
+			$this->cancelRun();
+		} elseif ($status === "error") {
+			AntiProxy::getInstance()->getServer()->getLogger()->notice(Language::translateMessage("security-prefix") . " " . vsprintf(Language::translateMessage("check-error"), [$this->username, $this->ip, $err]));
 			$this->cancelRun();
 		}
 	}

@@ -1,9 +1,9 @@
 {
   "plugin_name": "AntiVPN",
-  "version": "0.0.1-BETA",
-  "channel": "dev",
+  "version": "0.0.1",
+  "channel": "stable",
   "api_from": "4.0.0",
   "api_to": "4.15.1",
   "author": "ReinfyTeam",
-  "artifactUrl": "https://github.com/ReinfyTeam/AntiVPN/releases/download/v0.0.1-BETA/AntiVPN.phar"
+  "artifactUrl": "https://github.com/ReinfyTeam/AntiVPN/releases/download/v0.0.1/AntiVPN.phar"
 }
