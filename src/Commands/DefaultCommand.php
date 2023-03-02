@@ -66,6 +66,7 @@ class DefaultCommand extends Command implements PluginOwned {
 					return;
 				} else {
 					if (($player = $this->getOwningPlugin()->getServer()->getPlayerExact($args[1])) !== null) {
+						$sender->sendMessage(vsprintf(Language::translateMessage("lookup-notice"), [strtolower($args[1])]));
 						$this->getOwningPlugin()->getServer()->getAsyncPool()->submitTask(new ProxyLookupTask($player->getName(), $player->getNetworkSession()->getIp()));
 					} else {
 						$sender->sendMessage(vsprintf(Language::translateMessage("player-not-found"), [$args[1]]));

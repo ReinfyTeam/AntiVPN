@@ -37,4 +37,5 @@ lookup-error-1: "&cUnable to lookup &6%s's ip on the server. &6%s&c"
 check-error: "&cWe are unable to check &6%s's ip: &b%s&c from the server. &4%s"
 not-using-proxy: "&a%s's ip: &6%s&a is not suspected using Proxy/VPN."
 security-prefix: "&e[AntiProxy Security]&r"
+lookup-notice: "&6We are now checking &c%s's &6ip address."
 ...

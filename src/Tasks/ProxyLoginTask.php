@@ -68,7 +68,7 @@ class ProxyLoginTask extends AsyncTask {
 					if ($json !== null) {
 						$result = json_decode($json->getBody(), true);
 
-						if ($result === null) {
+						if (empty($result)) {
 							AntiProxy::getInstance()->getServer()->getLogger()->notice(Language::translateMessage("security-prefix") . " " . vsprintf(Language::translateMessage("check-error"), [$this->username, $this->ip, ($err ?? "Unknown error.")]));
 							$this->cancelRun();
 							return;
@@ -92,7 +92,7 @@ class ProxyLoginTask extends AsyncTask {
 					if ($json !== null) {
 						$result = json_decode($json->getBody(), true);
 
-						if ($result === null) {
+						if (empty($result)) {
 							AntiProxy::getInstance()->getServer()->getLogger()->notice(Language::translateMessage("security-prefix") . " " . vsprintf(Language::translateMessage("check-error"), [$this->username, $this->ip, ($err ?? "Unknown error.")]));
 							return;
 						} // fix null object
@@ -142,7 +142,14 @@ class ProxyLoginTask extends AsyncTask {
 
 	public function onCompletion() : void {
 		[$status, $country, $err] = $this->getResult();
-
+		
+		
+		if(!empty($err)){
+			AntiProxy::getInstance()->getServer()->getLogger()->notice(Language::translateMessage("security-prefix") . " " . vsprintf(Language::translateMessage("check-error"), [$this->username, $this->ip, $err]));
+			$this->cancelRun();
+			return;
+		}
+		
 		if ($status === true) {
 			$player = AntiProxy::getInstance()->getServer()->getPlayerExact($this->username);
 			$player->kick(AntiProxy::getInstance()->getConfig()->get("kick-message"), null); // kick the player.
@@ -152,7 +159,7 @@ class ProxyLoginTask extends AsyncTask {
 			AntiProxy::getInstance()->getServer()->getLogger()->notice(Language::translateMessage("security-prefix") . " " . vsprintf(Language::translateMessage("not-using-proxy"), [$this->username, $this->ip]));
 			$this->cancelRun();
 		} elseif ($status === "error") {
-			AntiProxy::getInstance()->getServer()->getLogger()->notice(Language::translateMessage("security-prefix") . " " . vsprintf(Language::translateMessage("check-error"), [$this->username, $this->ip, $err]));
+			AntiProxy::getInstance()->getServer()->getLogger()->notice(Language::translateMessage("security-prefix") . " " . vsprintf(Language::translateMessage("check-error"), [$this->username, $this->ip, ($err ?? "Unknown error.")]));
 			$this->cancelRun();
 		}
 	}
