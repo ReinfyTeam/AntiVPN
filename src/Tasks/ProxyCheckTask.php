@@ -31,7 +31,7 @@ use ReinfyTeam\AntiVPN\Utils\Language;
 use function json_decode;
 use function vsprintf;
 
-class ProxyLoginTask extends AsyncTask {
+class ProxyCheckTask extends AsyncTask {
 	private $username;
 
 	private $ip;
@@ -56,7 +56,8 @@ class ProxyLoginTask extends AsyncTask {
 		$country = null;
 		$err = null;
 
-		if (AntiProxy::$enabled === false) {
+		if (!AntiProxy::$enabled) {
+			AntiProxy::getInstance()->getServer()->getLogger()->notice(Language::translateMessage("security-prefix") . " " . Language::translateMessage("disabled-check-notice"));
 			return;
 		} // do not check until admin enabled it.
 
@@ -142,14 +143,14 @@ class ProxyLoginTask extends AsyncTask {
 
 	public function onCompletion() : void {
 		[$status, $country, $err] = $this->getResult();
-		
-		
-		if(!empty($err)){
+
+
+		if (!empty($err)) {
 			AntiProxy::getInstance()->getServer()->getLogger()->notice(Language::translateMessage("security-prefix") . " " . vsprintf(Language::translateMessage("check-error"), [$this->username, $this->ip, $err]));
 			$this->cancelRun();
 			return;
 		}
-		
+
 		if ($status === true) {
 			$player = AntiProxy::getInstance()->getServer()->getPlayerExact($this->username);
 			$player->kick(AntiProxy::getInstance()->getConfig()->get("kick-message"), null); // kick the player.

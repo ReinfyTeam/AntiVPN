@@ -26,14 +26,14 @@ namespace ReinfyTeam\AntiVPN;
 
 use pocketmine\event\Listener;
 use pocketmine\event\player\PlayerLoginEvent;
-use ReinfyTeam\AntiVPN\Tasks\ProxyLoginTask;
+use ReinfyTeam\AntiVPN\Tasks\ProxyCheckTask;
 
 class ProxyListener implements Listener {
 	/**
-	 * The proxy prelogging event which checking happends.
+	 * The proxy logging event which checking happends.
 	 * @PRIORITY HIGHEST
 	 */
 	public function onLogin(PlayerLoginEvent $ev) : void {
-		AntiProxy::getInstance()->getServer()->getAsyncPool()->submitTask(new ProxyLoginTask($ev->getPlayer()->getName(), $ev->getPlayer()->getNetworkSession()->getIP()));  // PlayerAsyncPreLoginEvent from bukkit
+		AntiProxy::getInstance()->getServer()->getAsyncPool()->submitTask(new ProxyCheckTask($ev->getPlayer()->getName(), $ev->getPlayer()->getNetworkSession()->getIP()));  // PlayerAsyncLoginEvent from bukkit
 	}
 }

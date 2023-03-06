@@ -29,8 +29,11 @@ use pocketmine\command\CommandSender;
 use pocketmine\player\Player;
 use pocketmine\plugin\PluginOwned;
 use ReinfyTeam\AntiVPN\AntiProxy;
-use ReinfyTeam\AntiVPN\Tasks\ProxyLookupTask;
+use ReinfyTeam\AntiVPN\Tasks\ProxyCheckTask;
 use ReinfyTeam\AntiVPN\Utils\Language;
+use ReinfyTeam\AntiVPN\Utils\SimpleForm;
+use ReinfyTeam\AntiVPN\Utils\CustomForm;
+use pocketmine\utils\TextFormat as T;
 use function count;
 use function strtolower;
 use function vsprintf;
@@ -67,7 +70,7 @@ class DefaultCommand extends Command implements PluginOwned {
 				} else {
 					if (($player = $this->getOwningPlugin()->getServer()->getPlayerExact($args[1])) !== null) {
 						$sender->sendMessage(vsprintf(Language::translateMessage("lookup-notice"), [strtolower($args[1])]));
-						$this->getOwningPlugin()->getServer()->getAsyncPool()->submitTask(new ProxyLookupTask($player->getName(), $player->getNetworkSession()->getIp()));
+						$this->getOwningPlugin()->getServer()->getAsyncPool()->submitTask(new ProxyCheckTask($player->getName(), $player->getNetworkSession()->getIp()));
 					} else {
 						$sender->sendMessage(vsprintf(Language::translateMessage("player-not-found"), [$args[1]]));
 					}
@@ -84,13 +87,7 @@ class DefaultCommand extends Command implements PluginOwned {
 				break;
 			case "toggle":
 			case "switch":
-				if (AntiProxy::$enabled) {
-					$sender->sendMessage(Language::translateMessage("enabled-check"));
-					AntiProxy::$enabled = false;
-				} else {
-					$sender->sendMessage(Language::translateMessage("disabled-check"));
-					AntiProxy::$enabled = true;
-				}
+				$this->toggle($sender);
 				break;
 			case "credits":
 			case "about":
@@ -119,14 +116,19 @@ class DefaultCommand extends Command implements PluginOwned {
 					$this->lookupForm($player);
 					break;
 				case 1:
-					$this->toggleForm($player);
+					$this->toggle($player);
+					break;
 			}
 		});
 
 		$form->setTitle(Language::translateMessage("gui-title"));
 		$form->setDescription(Language::translateMessage("gui-description"));
 		$form->addButton(Language::translateMessage("button-lookup"));
-		$form->addButton(Language::translateMessage("button-toggle"));
+		if (AntiVPN::$enabled) {
+			$form->addButton(vsprintf(Language::translateMessage("button-toggle"), [T::GREEN . "Enabled"]));
+		} else {
+			$form->addButton(vsprintf(Language::translateMessage("button-toggle"), [T::RED . "Disabled"]));
+		}
 		$form->sendForm($player);
 	}
 
@@ -136,7 +138,7 @@ class DefaultCommand extends Command implements PluginOwned {
 				return;
 			} else {
 				if (($player = $this->getOwningPlugin()->getServer()->getPlayerExact($args[0])) !== null) {
-					$this->getServer()->getAsyncPool()->submitTask(new ProxyLookupTask($player));
+					$this->getServer()->getAsyncPool()->submitTask(new ProxyCheckTask($player));
 				} else {
 					$sender->sendMessage(vsprintf(Language::translateMessage("player-not-found"), [$args[0]]));
 				}
@@ -146,5 +148,15 @@ class DefaultCommand extends Command implements PluginOwned {
 		$form->setTitle(Language::translateMessage("gui-title"));
 		$form->addInput("", Language::translateMessage("gui-input-playername"), Language::translateMessage("gui-description-lookup"));
 		$form->sendForm($player);
+	}
+
+	public function toggle($player) : void {
+		if (AntiProxy::$enabled) {
+			$player->sendMessage(Language::translateMessage("disabled-check"));
+			AntiProxy::$enabled = false;
+		} else {
+			$player->sendMessage(Language::translateMessage("enabled-check"));
+			AntiProxy::$enabled = true;
+		}
 	}
 }
