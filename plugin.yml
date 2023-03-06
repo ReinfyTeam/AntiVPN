@@ -2,7 +2,7 @@
 name: AntiVPN
 version: 0.0.1
 main: ReinfyTeam\AntiVPN\AntiProxy
-api: [4.0.0,5.0.0]
+api: [4.0.0]
 src-namespace-prefix: ReinfyTeam\AntiVPN
 description: "The best AntiProxy System for your PocketMine-MP Server!"
 website: "https://github.com/ReinfyTeam/AntiVPN"

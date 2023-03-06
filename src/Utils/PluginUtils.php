@@ -26,6 +26,7 @@ namespace ReinfyTeam\AntiVPN\Utils;
 
 use pocketmine\player\Player;
 use pocketmine\utils\TextFormat;
+use ReinfyTeam\ProfanityFilter\Loader;
 use function array_keys;
 use function array_values;
 use function is_bool;
@@ -69,7 +70,7 @@ final class PluginUtils {
 	 * Format Message. Dont call it directly.
 	 */
 	public function formatMessage(string $message, ?Player $player = null) : string {
-		$message = str_replace("{type}", $this->getConfig()->get("punishment-type") . "ed", $message);
+		$message = str_replace("{type}", Loader::getInstance()->getConfig()->get("punishment-type") . "ed", $message);
 
 		// FOR PLAYERS
 		if ($player === null) {
