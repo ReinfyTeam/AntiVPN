@@ -9,8 +9,8 @@
         "pocketmine/pocketmine-mp": "4.20.4"
     },
     "require-dev": {
-        "friendsofphp/php-cs-fixer": "v3.15.1",
-        "phpstan/phpstan": "1.10.20",
+        "friendsofphp/php-cs-fixer": "v3.24.0",
+        "phpstan/phpstan": "1.10.32",
         "phpstan/phpstan-phpunit": "^1.1.0",
         "phpstan/phpstan-strict-rules": "^1.2.0",
         "phpunit/phpunit": "^9.2"
