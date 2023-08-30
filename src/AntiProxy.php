@@ -40,6 +40,7 @@ class AntiProxy extends PluginBase implements Listener {
     
     public function onLoad() : void{
         self::setInstance($this);
+        Curl::register($this);
     }  
     
     public function onEnable() : void{
