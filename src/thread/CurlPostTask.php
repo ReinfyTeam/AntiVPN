@@ -22,22 +22,31 @@
 
 declare(strict_types=1);
 
-namespace ReinfyTeam\AntiVPN;
+namespace ReinfyTeam\AntiVPN\thread;
 
-use function in_array;
+use Closure;
+use pocketmine\utils\Internet;
+use function is_array;
+use function json_encode;
 
-class ProxyUtils {
-	public const PROXYDETECTOR = "https://proxydetector.io/";
+class CurlPostTask extends CurlTask
+{
 
-	public static function bypassIP(string $ip) : bool {
-		return in_array($ip, AntiProxy::getInstance()->getConfig()->get("bypass-ip"), true);
+	protected string $args;
+
+	public function __construct(string $page, array|string $args, int $timeout, array $headers, Closure $closure = null)
+	{
+		if (is_array($args)) {
+			$this->args = json_encode($args, JSON_THROW_ON_ERROR);
+		} else {
+			$this->args = $args;
+		}
+
+		parent::__construct($page, $timeout, $headers, $closure);
 	}
 
-	public static function bypassPlayer(string $username) : bool {
-		return in_array($ip, AntiProxy::getInstance()->getConfig()->get("bypass-ip"), true);
-	}
-
-	public static function getReason() : string {
-		return PluginUtils::colorize(AntiProxy::getInstance()->getConfig()->get("kick-message"));
+	public function onRun() : void
+	{
+		$this->setResult(Internet::postURL($this->page, $this->args, $this->timeout, $this->getHeaders()));
 	}
 }

@@ -1,5 +1,6 @@
 <?php
 
+
 /*
  *
  *  ____           _            __           _____
@@ -19,113 +20,70 @@
  *
  *
  */
-
-declare(strict_types=1);
-
+ 
 namespace ReinfyTeam\AntiVPN;
 
-use pocketmine\permission\DefaultPermissions;
-use pocketmine\permission\Permission;
-use pocketmine\permission\PermissionManager;
 use pocketmine\plugin\PluginBase;
-use pocketmine\utils\SingletonTrait;
-use ReinfyTeam\AntiVPN\Commands\DefaultCommand;
-use ReinfyTeam\AntiVPN\Tasks\PoggitUpdateTask;
-use ReinfyTeam\AntiVPN\Utils\Language;
-use function fclose;
-use function file_exists;
-use function mkdir;
-use function rename;
-use function stream_get_contents;
-use function unlink;
-use function yaml_parse;
+use pocketmine\utils\TextFormat;
+use pocketmine\event\Listener;
+use pocketmine\event\player\PlayerPreLoginEvent;
+use pocketmine\permission\Permission;
+use pocketmine\permission\DefaultPermissions;
+use pocketmine\permission\PermissionManager;
+use pocketmine\utils\InternetRequestResult;
 
-class AntiProxy extends PluginBase {
-	use SingletonTrait;
+class AntiProxy extends PluginBase implements Listener {
+    
+    use SingletonTrait;
+    
+    public function onLoad() : void{
+        self::setInstance($this);
+    }  
+    
+    public function onEnable() : void{
+        $this->getServer()->getPluginManager()->registerEvents($this, $this);
+        $this->saveResource("config.yml");
+        $perm = new Permission($this->getConfig()->get("bypass-permission"), "AntiProxy Bypass", []);
+        $p = PermissionManager::getInstance()->getPermission(DefaultPermissions::ROOT_OPERATOR);
+		$p->addChild($perm->getName(), true);
+    }
+    
+    public function onPreProxyCheckLogin(PlayerPreLoginEvent $event) : void{
+        $this->checkVPN($event->getUsername(), $event->getIp());
+    }
+    
+    public function checkVPN(string $username, string $address) : void{
+		if($this->getServer()->isOp($username)) return;
+        if(($key = $this->getConfig()->get("api-key")) === ""){
+            $url = "https://vpnapi.io/api/$address";
+        } else {
+            $url = "https://vpnapi.io/api/$address&key=$key";
+        }
+		Curl::getRequest($url, 10, ["Content-Type: application/json"], function(?InternetRequestResult $result) use ($username) : void {
+			if($result !== null){
+				if(($response = json_decode($result->getBody(), true)) !== null){
 
-	public static bool $enabled = true;
+                    if(in_array($address, $this->getConfig()->get("bypass-ip"), true)) return;
+                    
+					if(isset($response["message"]) && $response["message"] !== ""){
+                        $this->getLogger()->notice(TF::RED . "Unable to check ip: " . TF::AQUA . $address . TF::RED . " Error: " . TF::DARK_RED . $response["message"]);
+						$this->checkVPN($username, $address); // continuous executions
+						return;
+					}
 
-	public function onLoad() : void {
-		AntiProxy::$instance = $this;
-		$this->checkConfig();
-		$this->saveResources();
-		$this->checkUpdates();
-		$this->registerPermissions();
-	}
-
-	public function onEnable() : void {
-		$this->registerCommands();
-		$this->loadListener();
-		$this->registerPermissions();
-	}
-
-	private function checkConfig() : void {
-		$log = $this->getLogger();
-		$pluginConfigResource = $this->getResource("config.yml");
-		$lang = new Language();
-		$pluginConfig = yaml_parse(stream_get_contents($pluginConfigResource));
-		fclose($pluginConfigResource);
-		$config = $this->getConfig();
-
-		if ($pluginConfig == false) {
-			$log->critical("Invalid Configuration Syntax, Please remove your update the plugin.");
-			$this->getServer()->getPluginManager()->disablePlugin($this);
-			return;
-		}
-
-		if ($config->get("config-version") === $pluginConfig["config-version"]) {
-			return;
-		}
-
-		$log->notice($lang->translateMessage("outdated-config"));
-		@rename($this->getDataFolder() . "config.yml", $this->getDataFolder() . "old-config.yml");
-		@unlink($this->getDataFolder() . "old-config.yml");
-		$this->saveResource("config.yml");
-	}
-
-	private function checkUpdates() : void {
-		$lang = new Language();
-		if ((bool) ($this->getConfig()->get("check-updates") ?? true)) {
-			$this->getServer()->getAsyncPool()->submitTask(new PoggitUpdateTask($this->getDescription()->getName(), $this->getDescription()->getVersion()));
-		} else {
-			$this->getServer()->getLogger()->warning($lang->translateMessage("new-update-prefix") . " " . $lang->translateMessage("update-warning"));
-		}
-	}
-
-	private function registerPermissions() : void {
-		$this->registerPermission(($this->getConfig()->get("bypass-permission") ?? "antiproxy.bypass"));
-		$this->registerPermission(($this->getConfig()->get("command-permission") ?? "antiproxy.admin.command"));
-	}
-
-	private function loadListener() : void {
-		$this->getServer()->getPluginManager()->registerEvents(new ProxyListener(), $this);
-	}
-
-	/**
-	 * Initilize the resource in the context.
-	 */
-	private function saveResources() : void {
-		if (!file_exists($this->getDataFolder() . "langs/")) {
-			@mkdir($this->getDataFolder() . "langs/");
-		}
-		$this->saveResource("langs/eng.yml");
-		if (!file_exists($this->getDataFolder() . "discord-webhook.yml")) {
-			$this->saveResource("discord-webhook.yml");
-		}
-
-		foreach ($this->getResources() as $file) {
-			$this->saveResource($file->getFilename());
-		}
-	}
-
-	private function registerPermission(string $perm) : void {
-		$permission = new Permission($perm);
-		$permManager = PermissionManager::getInstance();
-		$permManager->addPermission($permission);
-		$permManager->getPermission(DefaultPermissions::ROOT_OPERATOR)->addChild($permission->getName(), true);
-	}
-
-	private function registerCommands() {
-		$this->getServer()->getCommandMap()->register($this->getDescription()->getName(), new DefaultCommand());
+					if(isset($response["security"]["vpn"]) && isset($response["security"]["proxy"]) && isset($response["security"]["tor"]) && isset($response["security"]["relay"])){
+						if($response["security"]["vpn"] === true || $response["security"]["proxy"] === true || $response["security"]["tor"] === true || $response["security"]["relay"] === true){
+							if(($player = Core::getInstance()->getServer()->getPlayerExact($username)) !== null && $player->isOnline() && $player->spawned){
+								Core::getInstance()->getScheduler()->scheduleDelayedTask(new ClosureTask(function () use ($player){
+									$player->kick(TF::clean(TF::colorize($this->getConfig()->get("kick-message", "Proxy/VPN is not allowed in our server."))), "", TF::colorize($this->getConfig()->get("kick-message", "&cProxy/VPN is not allowed in our server.")));
+								}), 2);
+								return;
+							}
+						}
+					}
+				}
+			}
+			$this->checkVPN($username, $address); // continuous excecution
+		});
 	}
 }

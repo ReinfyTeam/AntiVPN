@@ -16,12 +16,12 @@
 #
 # How blocking works?
 # ---
-# The plugin sending a request with the player ip to <https://proxychecker.io> and <https://vpnapi.io/> to ensure
-# the player doesn't use Proxy/VPN Services. These can prevent ip-ban bypassing, and more..
+# The plugin sending a request with the player ip to <https://vpnapi.io/> to ensure
+# the player doesn't use Proxy/VPN Services. These can prevent ip-ban bypassing, and DDOS attack..
 #
 # Why theres no offline in this plugin?
 # ---
-# Well, this plugin requesting to <https://proxychecker.io> & <https://vpnapi.io/> if your server has no connection
+# Well, this plugin requesting to <https://vpnapi.io/> if your server has no connection
 # within the proxy, the plugin wont work. I recommend you to use VPS or hosting provider for
 # your minecraft server to ensure best expierience of the plugin.
 #
@@ -34,39 +34,14 @@
 # A DEVELOPER TOLD YOU TO CHANGE THIS. PLEASE DO NOT MODIFY THIS!
 config-version: 0.0.1
 
-# API KEY on proxydetector.io
-# If you have an api key from proxydetector.io, get put it here.
-# Leave blank to use standard/guess access to vpnapi.io which is limited.
+# API KEY on vpnapi.io
+# If you have an api key from vpnapi.io, get put it here.
+# Leave blank to use standard/guess access to vpnapi.io which is limited to 100 request per day.
 api-key: ""
-
-# LANGUAGE SELECTOR
-# Choose available language currently translated to your country.
-# If you want to add more, kindly create pull request on <https://github.com/ReinfyTeam/AntiVPN/pulls>.
-# If you create a pull request, you need to comply with international standard ISO 639-2 language code
-# List of ISO 639-2 language codes: https://www.loc.gov/standards/iso639-2/php/code_list.php
-# Available Language: eng, deu, fil
-# If you want to use custom messages, just customize the language file.
-lang: "eng"
 
 # If player is detected using Proxy/VPN.
 # Kick message will prompt to player when they using Proxy/VPN
 kick-message: "&cProxy/VPN is not allowed in our server."
-
-# PLUGIN UPDATES
-# Do you want to check updates from github or poggit servers?
-check-updates: true
-
-# API Providers
-# We have currently supported api's websites best for your
-# servers!
-# https://vpnapi.io/ (0) [API KEY NEEDED]- VPNAPI.io collects data all across the web, where our algorithm detects proxies, VPN, and Tor nodes. 
-# This gives developers and businesses a peace of mind when it comes to detecting and blocking IP addresses associated with proxies, VPNs, and Tor nodes. 
-# So far, we have worked with developers all around the world, where they use our API to enforce geo-blocking, prevent shopping or click fraud, reduce fake accounts and spam, prevent bots and malware, and more!
-# https://proxycheck.io/ (1) [NO-API KEY NEEDED] - Whether you're running an internet based business, game server or blog our detection can help you mitigate the negative effects of proxy use. 
-# View all our features available to free and paid customers.
-# Default is (1)
-provider: 1
-
 
 # BYPASS IP ADDRESS
 # Bypass their ip address like localhost (127.0.0.1) user if any, or
@@ -74,15 +49,13 @@ provider: 1
 bypass-ip:
     - "127.0.0.1"
     - "192.168.0.1"
+    - "::"
+    - "localhost"
 
 # BYPASS PERMISSION
 # Allows you to customize the bypass permission
 # that permission plugin uses.
 bypass-permission: "antivpn.bypass"
-# COMMAND PERMISSION
-# Allows you to use customized command permission.
-# that permission plugin uses.
-command-permission: "antivpn.admin.command"
 
 # BYPASS PLAYERS
 # Allows you to bypass the player username from checking their ip.
@@ -91,10 +64,5 @@ bypass-players:
     - "xqwtxon"
     - "NhanAZ"
     - "xVoiqMC"
-    - "BypassedPremiumUser"
-    
-# DISCORD WEBHOOK NOTIFIER
-# Allows you to notify within on discord.
-# This can be accessed in discord-webhook.yml on plugin_data.
-discord-webhook: true
+    - "BypassedAdminUser"
 ...

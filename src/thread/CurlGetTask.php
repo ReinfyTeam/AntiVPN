@@ -22,9 +22,14 @@
 
 declare(strict_types=1);
 
-namespace ReinfyTeam\AntiVPN\Utils\Forms;
+namespace ReinfyTeam\AntiVPN\thread;
 
-use pocketmine\plugin\PluginBase;
+use pocketmine\utils\Internet;
 
-class FormAPI extends PluginBase {
+class CurlGetTask extends CurlTask
+{
+	public function onRun() : void
+	{
+		$this->setResult(Internet::getURL($this->page, $this->timeout, $this->getHeaders()));
+	}
 }
