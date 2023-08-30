@@ -31,6 +31,8 @@ use pocketmine\permission\Permission;
 use pocketmine\permission\DefaultPermissions;
 use pocketmine\permission\PermissionManager;
 use pocketmine\utils\InternetRequestResult;
+use pocketmine\scheduler\ClosureTask;
+use ReinfyTeam\AntiVPN\Curl;
 
 class AntiProxy extends PluginBase implements Listener {
     
@@ -74,7 +76,7 @@ class AntiProxy extends PluginBase implements Listener {
 					if(isset($response["security"]["vpn"]) && isset($response["security"]["proxy"]) && isset($response["security"]["tor"]) && isset($response["security"]["relay"])){
 						if($response["security"]["vpn"] === true || $response["security"]["proxy"] === true || $response["security"]["tor"] === true || $response["security"]["relay"] === true){
 							if(($player = Core::getInstance()->getServer()->getPlayerExact($username)) !== null && $player->isOnline() && $player->spawned){
-								Core::getInstance()->getScheduler()->scheduleDelayedTask(new ClosureTask(function () use ($player){
+								$this->getScheduler()->scheduleDelayedTask(new ClosureTask(function () use ($player){
 									$player->kick(TF::clean(TF::colorize($this->getConfig()->get("kick-message", "Proxy/VPN is not allowed in our server."))), "", TF::colorize($this->getConfig()->get("kick-message", "&cProxy/VPN is not allowed in our server.")));
 								}), 2);
 								return;
