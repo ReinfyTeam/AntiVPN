@@ -57,7 +57,7 @@ class AntiProxy extends PluginBase implements Listener {
     
     public function checkVPN(string $username, string $address) : void{
 		if($this->getServer()->isOp($username)) return;
-        if(($key = $this->getConfig()->get("api-key")) === ""){
+        if(($key = $this->getConfig()->get("api-key", "")) === ""){
             $url = "https://vpnapi.io/api/$address";
         } else {
             $url = "https://vpnapi.io/api/$address&key=$key";
