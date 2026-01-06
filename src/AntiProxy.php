@@ -24,7 +24,7 @@
 namespace ReinfyTeam\AntiVPN;
 
 use pocketmine\plugin\PluginBase;
-use pocketmine\utils\TextFormat;
+use pocketmine\utils\TextFormat as TF;
 use pocketmine\event\Listener;
 use pocketmine\event\player\PlayerPreLoginEvent;
 use pocketmine\permission\Permission;
