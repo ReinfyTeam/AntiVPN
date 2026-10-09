@@ -34,7 +34,8 @@ class CurlPostTask extends CurlTask
 
 	protected string $args;
 
-	public function __construct(string $page, array|string $args, int $timeout, array $headers, Closure $closure = null)
+	/** @param string|array<string, mixed> $args @param list<string> $headers */
+	public function __construct(string $page, array|string $args, int $timeout, array $headers, ?Closure $closure = null)
 	{
 		if (is_array($args)) {
 			$this->args = json_encode($args, JSON_THROW_ON_ERROR);

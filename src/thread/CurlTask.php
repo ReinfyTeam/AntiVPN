@@ -41,7 +41,8 @@ abstract class CurlTask extends AsyncTask
 
 	protected string $headers;
 
-	public function __construct(string $page, int $timeout, array $headers, Closure $closure = null)
+	/** @param list<string> $headers */
+	public function __construct(string $page, int $timeout, array $headers, ?Closure $closure = null)
 	{
 		$this->page = $page;
 		$this->timeout = $timeout;
@@ -58,24 +59,32 @@ abstract class CurlTask extends AsyncTask
 		}
 	}
 
+	/** @return list<string> */
 	public function getHeaders() : array
 	{
-		/** @var array $headers */
 		$headers = igbinary_unserialize($this->headers);
+		if (!is_array($headers)) {
+			return [];
+		}
 
-		return $headers;
+		$result = [];
+		foreach ($headers as $header) {
+			if (is_string($header)) {
+				$result[] = $header;
+			}
+		}
+		return $result;
 	}
 
 	public function onCompletion() : void
 	{
 		try {
-			/** @var Closure $closure */
 			$closure = $this->fetchLocal('closure');
 		} catch (InvalidArgumentException $exception) {
 			return;
 		}
 
-		if ($closure !== null) {
+		if ($closure instanceof Closure) {
 			$closure($this->getResult());
 		}
 	}

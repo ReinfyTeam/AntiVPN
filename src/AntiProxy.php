@@ -31,8 +31,8 @@ use pocketmine\permission\Permission;
 use pocketmine\permission\DefaultPermissions;
 use pocketmine\permission\PermissionManager;
 use pocketmine\utils\InternetRequestResult;
+use pocketmine\utils\SingletonTrait;
 use pocketmine\scheduler\ClosureTask;
-use ReinfyTeam\AntiVPN\Curl;
 
 class AntiProxy extends PluginBase implements Listener {
     
@@ -46,39 +46,62 @@ class AntiProxy extends PluginBase implements Listener {
     public function onEnable() : void{
         $this->getServer()->getPluginManager()->registerEvents($this, $this);
         $this->saveResource("config.yml");
-        $perm = new Permission($this->getConfig()->get("bypass-permission"), "AntiProxy Bypass", []);
+        $permissionName = $this->getConfig()->get("bypass-permission");
+        if (!is_string($permissionName)) {
+            return;
+        }
+        $perm = new Permission($permissionName, "AntiProxy Bypass", []);
         $p = PermissionManager::getInstance()->getPermission(DefaultPermissions::ROOT_OPERATOR);
-		$p->addChild($perm->getName(), true);
+		if ($p !== null) {
+			$p->addChild($perm->getName(), true);
+		}
     }
     
     public function onPreProxyCheckLogin(PlayerPreLoginEvent $event) : void{
-        $this->checkVPN($event->getUsername(), $event->getIp());
+        $this->checkVPN($event->getPlayerInfo()->getUsername(), $event->getIp());
     }
     
     public function checkVPN(string $username, string $address) : void{
 		if($this->getServer()->isOp($username)) return;
-        if(($key = $this->getConfig()->get("api-key", "")) === ""){
+        $key = $this->getConfig()->get("api-key", "");
+        if (!is_string($key)) {
+            $key = "";
+        }
+        if($key === ""){
             $url = "https://vpnapi.io/api/$address";
         } else {
             $url = "https://vpnapi.io/api/$address&key=$key";
         }
-		Curl::getRequest($url, 10, ["Content-Type: application/json"], function(?InternetRequestResult $result) use ($username) : void {
+		Curl::getRequest($url, 10, ["Content-Type: application/json"], function(?InternetRequestResult $result) use ($username, $address) : void {
 			if($result !== null){
-				if(($response = json_decode($result->getBody(), true)) !== null){
+				$response = json_decode($result->getBody(), true);
+				if(is_array($response)){
 
-                    if(in_array($address, $this->getConfig()->get("bypass-ip"), true)) return;
+                    $bypassIps = $this->getConfig()->get("bypass-ip", []);
+                    if (is_array($bypassIps)) {
+                        foreach ($bypassIps as $bypassIp) {
+                            if (is_string($bypassIp) && $bypassIp === $address) {
+                                return;
+                            }
+                        }
+                    }
                     
-					if(isset($response["message"]) && $response["message"] !== ""){
+					if(isset($response["message"]) && is_string($response["message"]) && $response["message"] !== ""){
                         $this->getLogger()->notice(TF::RED . "Unable to check ip: " . TF::AQUA . $address . TF::RED . " Error: " . TF::DARK_RED . $response["message"]);
 						$this->checkVPN($username, $address); // continuous executions
 						return;
 					}
 
-					if(isset($response["security"]["vpn"]) && isset($response["security"]["proxy"]) && isset($response["security"]["tor"]) && isset($response["security"]["relay"])){
-						if($response["security"]["vpn"] === true || $response["security"]["proxy"] === true || $response["security"]["tor"] === true || $response["security"]["relay"] === true){
-							if(($player = Core::getInstance()->getServer()->getPlayerExact($username)) !== null && $player->isOnline() && $player->spawned){
+					$security = $response["security"] ?? null;
+					if(is_array($security) && isset($security["vpn"]) && isset($security["proxy"]) && isset($security["tor"]) && isset($security["relay"])){
+						if($security["vpn"] === true || $security["proxy"] === true || $security["tor"] === true || $security["relay"] === true){
+							if(($player = $this->getServer()->getPlayerExact($username)) !== null && $player->isOnline() && $player->spawned){
 								$this->getScheduler()->scheduleDelayedTask(new ClosureTask(function () use ($player){
-									$player->kick(TF::clean(TF::colorize($this->getConfig()->get("kick-message", "Proxy/VPN is not allowed in our server."))), "", TF::colorize($this->getConfig()->get("kick-message", "&cProxy/VPN is not allowed in our server.")));
+									$kickMessage = $this->getConfig()->get("kick-message", "&cProxy/VPN is not allowed in our server.");
+									if (!is_string($kickMessage)) {
+										$kickMessage = "&cProxy/VPN is not allowed in our server.";
+									}
+									$player->kick(TF::clean(TF::colorize($kickMessage)), "", TF::colorize($kickMessage));
 								}), 2);
 								return;
 							}

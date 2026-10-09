@@ -36,7 +36,8 @@ class CurlPutTask extends CurlTask
 
 	protected string $args;
 
-	public function __construct(string $page, array|string $args, int $timeout, array $headers, Closure $closure = null)
+	/** @param string|array<string, mixed> $args @param list<string> $headers */
+	public function __construct(string $page, array|string $args, int $timeout, array $headers, ?Closure $closure = null)
 	{
 		if (is_array($args)) {
 			$this->args = json_encode($args, JSON_THROW_ON_ERROR);
@@ -59,7 +60,7 @@ class CurlPutTask extends CurlTask
 	 * @param string|string[] $args
 	 * @param string[] $extraHeaders
 	 * @param string|null $err reference parameter, will be set to the output of curl_error(). Use this to retrieve errors that occurred during the operation.
-	 * @phpstan-param string|array<string, string> $args
+	 * @phpstan-param string|array<string, mixed> $args
 	 * @phpstan-param list<string> $extraHeaders
 	 */
 	public static function putURL(string $page, array|string $args, int $timeout = 10, array $extraHeaders = [], &$err = null) : ?InternetRequestResult

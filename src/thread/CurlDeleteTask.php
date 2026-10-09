@@ -38,7 +38,11 @@ class CurlDeleteTask extends CurlTask
 
 	protected string $args;
 
-	public function __construct(string $page, array|string $args, int $timeout, array $headers, Closure $closure = null)
+	/**
+	 * @param string|array<string, mixed> $args
+	 * @phpstan-param list<string> $headers
+	 */
+	public function __construct(string $page, array|string $args, int $timeout, array $headers, ?Closure $closure = null)
 	{
 		if (is_array($args)) {
 			$this->args = json_encode($args, JSON_THROW_ON_ERROR);
@@ -64,7 +68,11 @@ class CurlDeleteTask extends CurlTask
 	 * @phpstan-param string|array<string, string> $args
 	 * @phpstan-param list<string> $extraHeaders
 	 */
-	private static function deleteURL(string $page, $args, int $timeout = 10, array $extraHeaders = [], &$err = null) : ?InternetRequestResult
+	/**
+	 * @param string|array<string, mixed> $args
+	 * @phpstan-param list<string> $extraHeaders
+	 */
+	private static function deleteURL(string $page, array|string $args, int $timeout = 10, array $extraHeaders = [], string|null &$err = null) : ?InternetRequestResult
 	{
 		try {
 			return Internet::simpleCurl($page, $timeout, $extraHeaders, [

@@ -22,7 +22,7 @@
 
 declare(strict_types=1);
 
-namespace libasynCurl;
+namespace ReinfyTeam\AntiVPN;
 
 use Closure;
 use InvalidArgumentException;
@@ -65,22 +65,35 @@ class Curl
 		return self::$registered;
 	}
 
-	public static function postRequest(string $page, array|string $args, int $timeout = 10, array $headers = [], Closure $closure = null) : void
+	/**
+	 * @param string|array<string, mixed> $args
+	 * @phpstan-param list<string> $headers
+	 */
+	public static function postRequest(string $page, array|string $args, int $timeout = 10, array $headers = [], ?Closure $closure = null) : void
 	{
 		self::$threadPool->submitTask(new CurlPostTask($page, $args, $timeout, $headers, $closure));
 	}
 
-	public static function putRequest(string $page, array|string $args, int $timeout = 10, array $headers = [], Closure $closure = null) : void
+	/**
+	 * @param string|array<string, mixed> $args
+	 * @phpstan-param list<string> $headers
+	 */
+	public static function putRequest(string $page, array|string $args, int $timeout = 10, array $headers = [], ?Closure $closure = null) : void
 	{
 		self::$threadPool->submitTask(new CurlPutTask($page, $args, $timeout, $headers, $closure));
 	}
 
-	public static function deleteRequest(string $page, array|string $args, int $timeout = 10, array $headers = [], Closure $closure = null) : void
+	/**
+	 * @param string|array<string, mixed> $args
+	 * @phpstan-param list<string> $headers
+	 */
+	public static function deleteRequest(string $page, array|string $args, int $timeout = 10, array $headers = [], ?Closure $closure = null) : void
 	{
 		self::$threadPool->submitTask(new CurlDeleteTask($page, $args, $timeout, $headers, $closure));
 	}
 
-	public static function getRequest(string $page, int $timeout = 10, array $headers = [], Closure $closure = null) : void
+	/** @phpstan-param list<string> $headers */
+	public static function getRequest(string $page, int $timeout = 10, array $headers = [], ?Closure $closure = null) : void
 	{
 		self::$threadPool->submitTask(new CurlGetTask($page, $timeout, $headers, $closure));
 	}
