@@ -12,11 +12,11 @@
 # ---
 # This is an online plugin that blocks Proxy/VPN Services used by players, to
 # manipulate their ip. This plugin will check them IP Address and these IP Address
-# are being sent to <https://proxychecker.io> and <https://vpnapi.io/>. 
+# are sent to <https://vpnapi.io/>.
 #
 # How blocking works?
 # ---
-# The plugin sending a request with the player ip to <https://vpnapi.io/> to ensure
+# The plugin sends a request with the player IP to <https://vpnapi.io/> to ensure
 # the player doesn't use Proxy/VPN Services. These can prevent ip-ban bypassing, and DDOS attack..
 #
 # Why theres no offline in this plugin?

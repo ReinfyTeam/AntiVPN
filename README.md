@@ -38,6 +38,7 @@ The generated configuration supports:
 - `kick-message`: message sent when a connection is classified as proxy, VPN,
   Tor or relay traffic.
 - `bypass-ip`: IP addresses that should not be checked.
+- `bypass-players`: player names that should not be checked.
 
 ## Development
 

@@ -63,6 +63,10 @@ class AntiProxy extends PluginBase implements Listener {
     
     public function checkVPN(string $username, string $address) : void{
 		if($this->getServer()->isOp($username)) return;
+		$bypassPlayers = $this->getConfig()->get("bypass-players", []);
+		if (is_array($bypassPlayers) && in_array($username, $bypassPlayers, true)) {
+			return;
+		}
         $key = $this->getConfig()->get("api-key", "");
         if (!is_string($key)) {
             $key = "";
@@ -70,7 +74,7 @@ class AntiProxy extends PluginBase implements Listener {
         if($key === ""){
             $url = "https://vpnapi.io/api/$address";
         } else {
-            $url = "https://vpnapi.io/api/$address&key=$key";
+			$url = "https://vpnapi.io/api/$address?key=$key";
         }
 		Curl::getRequest($url, 10, ["Content-Type: application/json"], function(?InternetRequestResult $result) use ($username, $address) : void {
 			if($result !== null){
