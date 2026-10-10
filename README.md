@@ -18,6 +18,9 @@ Tor and relay use through the configured online IP reputation service.
 
 AntiVPN depends on an external service. Its result, availability and request
 limits are controlled by that service; it is not an offline IP database.
+Transient failures and unusable responses are retried with increasing delays,
+up to three retries after the initial request. If the service remains
+unavailable, AntiVPN records the failure and does not classify that connection.
 
 ## Installation
 

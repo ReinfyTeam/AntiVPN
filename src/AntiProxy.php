@@ -35,6 +35,9 @@ use pocketmine\utils\SingletonTrait;
 use pocketmine\scheduler\ClosureTask;
 
 class AntiProxy extends PluginBase implements Listener {
+
+	private const MAX_RETRIES = 3;
+	private const RETRY_DELAY_TICKS = 20;
     
     use SingletonTrait;
     
@@ -61,7 +64,7 @@ class AntiProxy extends PluginBase implements Listener {
         $this->checkVPN($event->getPlayerInfo()->getUsername(), $event->getIp());
     }
     
-    public function checkVPN(string $username, string $address) : void{
+	public function checkVPN(string $username, string $address, int $attempt = 0) : void{
 		if($this->getServer()->isOp($username)) return;
 		$bypassPlayers = $this->getConfig()->get("bypass-players", []);
 		if (is_array($bypassPlayers) && in_array($username, $bypassPlayers, true)) {
@@ -76,7 +79,17 @@ class AntiProxy extends PluginBase implements Listener {
         } else {
 			$url = "https://vpnapi.io/api/$address?key=$key";
         }
-		Curl::getRequest($url, 10, ["Content-Type: application/json"], function(?InternetRequestResult $result) use ($username, $address) : void {
+		$retry = function () use ($username, $address, $attempt) : void {
+			if ($attempt >= self::MAX_RETRIES) {
+				$this->getLogger()->warning("VPNAPI.io did not return a usable result after " . (self::MAX_RETRIES + 1) . " attempts for " . $address . ".");
+				return;
+			}
+
+			$this->getScheduler()->scheduleDelayedTask(new ClosureTask(function () use ($username, $address, $attempt) : void {
+				$this->checkVPN($username, $address, $attempt + 1);
+			}), self::RETRY_DELAY_TICKS * ($attempt + 1));
+		};
+		Curl::getRequest($url, 10, ["Content-Type: application/json"], function(?InternetRequestResult $result) use ($username, $address, $retry) : void {
 			if($result !== null){
 				$response = json_decode($result->getBody(), true);
 				if(is_array($response)){
@@ -92,7 +105,7 @@ class AntiProxy extends PluginBase implements Listener {
                     
 					if(isset($response["message"]) && is_string($response["message"]) && $response["message"] !== ""){
                         $this->getLogger()->notice(TF::RED . "Unable to check ip: " . TF::AQUA . $address . TF::RED . " Error: " . TF::DARK_RED . $response["message"]);
-						$this->checkVPN($username, $address); // continuous executions
+						$retry();
 						return;
 					}
 
@@ -110,10 +123,11 @@ class AntiProxy extends PluginBase implements Listener {
 								return;
 							}
 						}
+						return;
 					}
 				}
 			}
-			$this->checkVPN($username, $address); // continuous excecution
+			$retry();
 		});
 	}
 }
