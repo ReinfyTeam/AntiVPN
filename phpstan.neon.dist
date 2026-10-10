@@ -1,4 +1,7 @@
 parameters:
-	level: 5
+	level: max
 	paths:
 		- src
+	bootstrapFiles:
+		- vendor/autoload.php
+		- stubs/igbinary.php
