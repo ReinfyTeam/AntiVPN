@@ -5,8 +5,9 @@ Tor and relay use through the configured online IP reputation service.
 
 ## Features
 
-- Checks a player's IP address during pre-login.
-- Kicks connections identified as proxy, VPN, Tor or relay traffic.
+- Starts an IP reputation check when a player begins logging in.
+- Kicks a player identified as proxy, VPN, Tor or relay traffic once the
+  asynchronous result is available and the player session can be addressed.
 - Supports a configurable bypass IP list.
 - Uses asynchronous HTTP requests so the check does not block the main server
   thread.
@@ -21,6 +22,10 @@ limits are controlled by that service; it is not an offline IP database.
 Transient failures and unusable responses are retried with increasing delays,
 up to three retries after the initial request. If the service remains
 unavailable, AntiVPN records the failure and does not classify that connection.
+Because the service request is asynchronous, a blocking result may be applied
+just after login rather than through the synchronous pre-login event. A result
+received before the player session is available is retained until the player
+joins, so it is not silently discarded.
 
 ## Installation
 

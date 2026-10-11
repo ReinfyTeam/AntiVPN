@@ -26,7 +26,9 @@ namespace ReinfyTeam\AntiVPN;
 use pocketmine\plugin\PluginBase;
 use pocketmine\utils\TextFormat as TF;
 use pocketmine\event\Listener;
+use pocketmine\event\player\PlayerJoinEvent;
 use pocketmine\event\player\PlayerPreLoginEvent;
+use pocketmine\player\Player;
 use pocketmine\permission\Permission;
 use pocketmine\permission\DefaultPermissions;
 use pocketmine\permission\PermissionManager;
@@ -38,6 +40,9 @@ class AntiProxy extends PluginBase implements Listener {
 
 	private const MAX_RETRIES = 3;
 	private const RETRY_DELAY_TICKS = 20;
+
+	/** @var array<string, true> */
+	private array $pendingKicks = [];
     
     use SingletonTrait;
     
@@ -63,6 +68,17 @@ class AntiProxy extends PluginBase implements Listener {
     public function onPreProxyCheckLogin(PlayerPreLoginEvent $event) : void{
         $this->checkVPN($event->getPlayerInfo()->getUsername(), $event->getIp());
     }
+
+	public function onPlayerJoin(PlayerJoinEvent $event) : void{
+		$player = $event->getPlayer();
+		$key = $this->pendingKickKey($player->getName(), $player->getNetworkSession()->getIp());
+		if (!isset($this->pendingKicks[$key])) {
+			return;
+		}
+
+		unset($this->pendingKicks[$key]);
+		$this->scheduleKick($player);
+	}
     
 	public function checkVPN(string $username, string $address, int $attempt = 0) : void{
 		if($this->getServer()->isOp($username)) return;
@@ -113,15 +129,11 @@ class AntiProxy extends PluginBase implements Listener {
 					if(is_array($security) && isset($security["vpn"]) && isset($security["proxy"]) && isset($security["tor"]) && isset($security["relay"])){
 						if($security["vpn"] === true || $security["proxy"] === true || $security["tor"] === true || $security["relay"] === true){
 							if(($player = $this->getServer()->getPlayerExact($username)) !== null && $player->isOnline() && $player->spawned){
-								$this->getScheduler()->scheduleDelayedTask(new ClosureTask(function () use ($player){
-									$kickMessage = $this->getConfig()->get("kick-message", "&cProxy/VPN is not allowed in our server.");
-									if (!is_string($kickMessage)) {
-										$kickMessage = "&cProxy/VPN is not allowed in our server.";
-									}
-									$player->kick(TF::clean(TF::colorize($kickMessage)), "", TF::colorize($kickMessage));
-								}), 2);
+								$this->scheduleKick($player);
 								return;
 							}
+
+							$this->pendingKicks[$this->pendingKickKey($username, $address)] = true;
 						}
 						return;
 					}
@@ -129,5 +141,23 @@ class AntiProxy extends PluginBase implements Listener {
 			}
 			$retry();
 		});
+	}
+
+	private function pendingKickKey(string $username, string $address) : string{
+		return $username . "\0" . $address;
+	}
+
+	private function scheduleKick(Player $player) : void{
+		$this->getScheduler()->scheduleDelayedTask(new ClosureTask(function () use ($player) : void{
+			if (!$player->isOnline()) {
+				return;
+			}
+
+			$kickMessage = $this->getConfig()->get("kick-message", "&cProxy/VPN is not allowed in our server.");
+			if (!is_string($kickMessage)) {
+				$kickMessage = "&cProxy/VPN is not allowed in our server.";
+			}
+			$player->kick(TF::clean(TF::colorize($kickMessage)), "", TF::colorize($kickMessage));
+		}), 2);
 	}
 }
