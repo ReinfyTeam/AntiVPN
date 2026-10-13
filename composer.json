@@ -3,9 +3,16 @@
     "description": "PocketMine-MP plugin that checks player connections for proxy and VPN use.",
     "type": "pocketmine-plugin",
     "license": "LGPL-2.1-only",
+    "repositories": [
+        {
+            "type": "vcs",
+            "url": "https://github.com/axolotl-pm/PocketMine-MP",
+            "no-api": true
+        }
+    ],
     "require-dev": {
         "phpstan/phpstan": "^2.1",
-        "pocketmine/pocketmine-mp": "^5.44.3"
+        "axolotl-pm/pocketmine-mp": "5.49.1"
     },
     "scripts": {
         "analyse": "vendor/bin/phpstan analyse -c phpstan.neon.dist"
