@@ -58,14 +58,21 @@ class AntiProxy extends PluginBase implements Listener {
         if (!is_string($apiKey) || trim($apiKey) === "") {
             $this->getLogger()->warning("No VPNAPI.io API key is configured; AntiVPN will skip IP classification.");
         }
+        $this->registerBypassPermission();
+    }
+
+    private function registerBypassPermission() : void{
         $permissionName = $this->getConfig()->get("bypass-permission");
-        if (!is_string($permissionName)) {
+        if (!is_string($permissionName) || $permissionName === "") {
             return;
         }
+
         $perm = new Permission($permissionName, "AntiProxy Bypass", []);
-        $p = PermissionManager::getInstance()->getPermission(DefaultPermissions::ROOT_OPERATOR);
-		if ($p !== null) {
-			$p->addChild($perm->getName(), true);
+        $permissionManager = PermissionManager::getInstance();
+        $permissionManager->addPermission($perm);
+        $operatorPermission = $permissionManager->getPermission(DefaultPermissions::ROOT_OPERATOR);
+		if ($operatorPermission !== null) {
+			$operatorPermission->addChild($perm->getName(), true);
 		}
     }
     
