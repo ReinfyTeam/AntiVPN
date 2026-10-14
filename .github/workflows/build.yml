@@ -21,7 +21,7 @@ jobs:
           php-version: '8.3'
           tools: composer:2.10.3
       - name: Install Composer dependencies
-        run: composer install --no-interaction --no-progress --prefer-dist
+        run: composer install --ignore-platform-reqs --no-interaction --no-progress --prefer-dist
       - name: Run bypass permission regression test
         run: composer run test:bypass-permission
   build-phar:
