@@ -15,6 +15,7 @@
         "axolotl-pm/pocketmine-mp": "5.49.1"
     },
     "scripts": {
-        "analyse": "vendor/bin/phpstan analyse -c phpstan.neon.dist"
+        "analyse": "vendor/bin/phpstan analyse -c phpstan.neon.dist",
+        "test:bypass-permission": "php tests/bypass-permission.php"
     }
 }

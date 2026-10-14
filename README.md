@@ -47,6 +47,8 @@ The generated configuration supports:
   Tor or relay traffic.
 - `bypass-ip`: IP addresses that should not be checked.
 - `bypass-players`: player names that should not be checked.
+- `bypass-permission`: permission granted to online players whose connection
+  should not be checked or kicked.
 
 ## Development
 
@@ -57,6 +59,7 @@ development dependencies and run:
 
 ```text
 composer install
+composer run test:bypass-permission
 composer analyse
 ```
 

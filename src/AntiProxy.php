@@ -77,32 +77,17 @@ class AntiProxy extends PluginBase implements Listener {
 		}
 
 		unset($this->pendingKicks[$key]);
+		if ($this->isBypassed($player->getName(), $player->getNetworkSession()->getIp())) {
+			return;
+		}
 		$this->scheduleKick($player);
 	}
     
 	public function checkVPN(string $username, string $address, int $attempt = 0) : void{
-		if($this->getServer()->isOp($username)) return;
-		$bypassPlayers = $this->getConfig()->get("bypass-players", []);
-		if (is_array($bypassPlayers) && in_array($username, $bypassPlayers, true)) {
+		if ($this->isBypassed($username, $address)) {
 			return;
 		}
-		$bypassIps = $this->getConfig()->get("bypass-ip", []);
-		if (is_array($bypassIps)) {
-			foreach ($bypassIps as $bypassIp) {
-				if (is_string($bypassIp) && $bypassIp === $address) {
-					return;
-				}
-			}
-		}
-        $key = $this->getConfig()->get("api-key", "");
-        if (!is_string($key)) {
-            $key = "";
-        }
-        if($key === ""){
-            $url = "https://vpnapi.io/api/$address";
-        } else {
-			$url = "https://vpnapi.io/api/$address?key=$key";
-        }
+
 		$retry = function () use ($username, $address, $attempt) : void {
 			if ($attempt >= self::MAX_RETRIES) {
 				$this->getLogger()->warning("VPNAPI.io did not return a usable result after " . (self::MAX_RETRIES + 1) . " attempts for " . $address . ".");
@@ -113,13 +98,23 @@ class AntiProxy extends PluginBase implements Listener {
 				$this->checkVPN($username, $address, $attempt + 1);
 			}), self::RETRY_DELAY_TICKS * ($attempt + 1));
 		};
+
+		$key = $this->getConfig()->get("api-key", "");
+		if (!is_string($key)) {
+			$key = "";
+		}
+		if($key === ""){
+			$url = "https://vpnapi.io/api/$address";
+		} else {
+			$url = "https://vpnapi.io/api/$address?key=$key";
+		}
 		Curl::getRequest($url, 10, ["Content-Type: application/json"], function(?InternetRequestResult $result) use ($username, $address, $retry) : void {
 			if($result !== null){
 				$response = json_decode($result->getBody(), true);
 				if(is_array($response)){
 
 					if(isset($response["message"]) && is_string($response["message"]) && $response["message"] !== ""){
-                        $this->getLogger()->notice(TF::RED . "Unable to check ip: " . TF::AQUA . $address . TF::RED . " Error: " . TF::DARK_RED . $response["message"]);
+						$this->getLogger()->notice(TF::RED . "Unable to check ip: " . TF::AQUA . $address . TF::RED . " Error: " . TF::DARK_RED . $response["message"]);
 						$retry();
 						return;
 					}
@@ -127,6 +122,10 @@ class AntiProxy extends PluginBase implements Listener {
 					$security = $response["security"] ?? null;
 					if(is_array($security) && isset($security["vpn"]) && isset($security["proxy"]) && isset($security["tor"]) && isset($security["relay"])){
 						if($security["vpn"] === true || $security["proxy"] === true || $security["tor"] === true || $security["relay"] === true){
+							if ($this->isBypassed($username, $address)) {
+								return;
+							}
+
 							if(($player = $this->getServer()->getPlayerExact($username)) !== null && $player->isOnline() && $player->spawned){
 								$this->scheduleKick($player);
 								return;
@@ -140,6 +139,32 @@ class AntiProxy extends PluginBase implements Listener {
 			}
 			$retry();
 		});
+	}
+
+	private function isBypassed(string $username, string $address) : bool{
+		if ($this->getServer()->isOp($username)) {
+			return true;
+		}
+
+		$permissionName = $this->getConfig()->get("bypass-permission");
+		$player = $this->getServer()->getPlayerExact($username);
+		if ($player !== null && is_string($permissionName) && $permissionName !== "" && $player->hasPermission($permissionName)) {
+			return true;
+		}
+
+		$bypassPlayers = $this->getConfig()->get("bypass-players", []);
+		if (is_array($bypassPlayers) && in_array($username, $bypassPlayers, true)) {
+			return true;
+		}
+		$bypassIps = $this->getConfig()->get("bypass-ip", []);
+		if (is_array($bypassIps)) {
+			foreach ($bypassIps as $bypassIp) {
+				if (is_string($bypassIp) && $bypassIp === $address) {
+					return true;
+				}
+			}
+		}
+		return false;
 	}
 
 	private function pendingKickKey(string $username, string $address) : string{

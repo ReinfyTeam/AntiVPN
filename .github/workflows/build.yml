@@ -9,6 +9,21 @@ permissions:
   contents: read
 
 jobs:
+  tests:
+    name: Run bypass permission regression test
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+      - name: Set up PHP environment
+        uses: shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962
+        with:
+          php-version: '8.3'
+          tools: composer:2.10.3
+      - name: Install Composer dependencies
+        run: composer install --no-interaction --no-progress --prefer-dist
+      - name: Run bypass permission regression test
+        run: composer run test:bypass-permission
   build-phar:
     name: Build plugin PHAR
     uses: NhanAZ/DevTools/.github/workflows/build-plugin.yml@3dedda2a1f6e42885aa680aaadeebacbc0f62733
