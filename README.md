@@ -15,7 +15,7 @@ Tor and relay use through the configured online IP reputation service.
 ## Requirements
 
 - PocketMine-MP API 5.0.0 or a compatible API 5 server.
-- Outbound HTTPS access to [VPNAPI.io](https://vpnapi.io/).
+- Outbound HTTPS access to [VPNAPI.io](https://vpnapi.io/) and a valid API key.
 
 AntiVPN depends on an external service. Its result, availability and request
 limits are controlled by that service; it is not an offline IP database.
@@ -32,8 +32,8 @@ joins, so it is not silently discarded.
 1. Download the plugin PHAR from a project release when one is available.
 2. Copy `AntiVPN.phar` into the server's `plugins` directory.
 3. Start the server once so it creates `plugin_data/AntiVPN/config.yml`.
-4. Review the API key, bypass IPs and kick message before enabling the check for
-   players.
+4. Add a valid [VPNAPI.io API key](https://vpnapi.io/api-documentation), then
+   review the bypass IPs and kick message before enabling the check for players.
 
 The configuration file is the source of truth for the available options. Keep
 API keys private and avoid committing a configured copy of the file.
@@ -42,7 +42,7 @@ API keys private and avoid committing a configured copy of the file.
 
 The generated configuration supports:
 
-- `api-key`: optional VPNAPI.io key.
+- `api-key`: required VPNAPI.io API key for the API endpoint.
 - `kick-message`: message sent when a connection is classified as proxy, VPN,
   Tor or relay traffic.
 - `bypass-ip`: IP addresses that should not be checked.

@@ -35,8 +35,9 @@
 config-version: 0.0.1
 
 # API KEY on vpnapi.io
-# If you have an api key from vpnapi.io, get put it here.
-# Leave blank to use standard/guess access to vpnapi.io which is limited to 100 request per day.
+# Create an account and obtain a key from the official API documentation:
+# <https://vpnapi.io/api-documentation>
+# The API endpoint requires a valid key. Do not commit a configured copy.
 api-key: ""
 
 # If player is detected using Proxy/VPN.
