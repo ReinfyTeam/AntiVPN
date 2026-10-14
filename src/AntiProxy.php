@@ -116,35 +116,29 @@ class AntiProxy extends PluginBase implements Listener {
 		}
 		$url = "https://vpnapi.io/api/$address?key=" . rawurlencode(trim($key));
 		Curl::getRequest($url, 10, ["Content-Type: application/json"], function(?InternetRequestResult $result) use ($username, $address, $retry) : void {
-			if($result !== null){
-				$response = json_decode($result->getBody(), true);
-				if(is_array($response)){
-
-					if(isset($response["message"]) && is_string($response["message"]) && $response["message"] !== ""){
-						$this->getLogger()->notice(TF::RED . "Unable to check ip: " . TF::AQUA . $address . TF::RED . " Error: " . TF::DARK_RED . $response["message"]);
-						$retry();
-						return;
-					}
-
-					$security = $response["security"] ?? null;
-					if(is_array($security) && isset($security["vpn"]) && isset($security["proxy"]) && isset($security["tor"]) && isset($security["relay"])){
-						if($security["vpn"] === true || $security["proxy"] === true || $security["tor"] === true || $security["relay"] === true){
-							if ($this->isBypassed($username, $address)) {
-								return;
-							}
-
-							if(($player = $this->getServer()->getPlayerExact($username)) !== null && $player->isOnline() && $player->spawned){
-								$this->scheduleKick($player);
-								return;
-							}
-
-							$this->pendingKicks[$this->pendingKickKey($username, $address)] = true;
-						}
-						return;
-					}
-				}
+			if ($result === null || $result->getCode() < 200 || $result->getCode() >= 300) {
+				$retry();
+				return;
 			}
-			$retry();
+
+			$classification = VpnApiResponse::parse($result->getBody());
+			if ($classification === null) {
+				$retry();
+				return;
+			}
+
+			if (VpnApiResponse::isBlocked($classification)) {
+				if ($this->isBypassed($username, $address)) {
+					return;
+				}
+
+				if (($player = $this->getServer()->getPlayerExact($username)) !== null && $player->isOnline() && $player->spawned) {
+					$this->scheduleKick($player);
+					return;
+				}
+
+				$this->pendingKicks[$this->pendingKickKey($username, $address)] = true;
+			}
 		});
 	}
 

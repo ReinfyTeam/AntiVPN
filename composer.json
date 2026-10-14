@@ -18,6 +18,7 @@
         "analyse": "vendor/bin/phpstan analyse -c phpstan.neon.dist",
         "test:bypass-permission": "php tests/bypass-permission.php",
         "test:configuration": "php tests/configuration.php",
-        "test:permission-registration": "php tests/permission-registration.php"
+        "test:permission-registration": "php tests/permission-registration.php",
+        "test:vpnapi-response": "php tests/vpnapi-response.php"
     }
 }

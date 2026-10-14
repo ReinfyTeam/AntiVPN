@@ -28,6 +28,8 @@ jobs:
         run: composer run test:configuration
       - name: Run permission registration regression test
         run: composer run test:permission-registration
+      - name: Run VPNAPI.io response contract test
+        run: composer run test:vpnapi-response
   build-phar:
     name: Build plugin PHAR
     uses: NhanAZ/DevTools/.github/workflows/build-plugin.yml@3dedda2a1f6e42885aa680aaadeebacbc0f62733

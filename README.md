@@ -24,6 +24,11 @@ up to three retries after the initial request. If the service remains
 unavailable, AntiVPN records the failure and does not classify that connection.
 If no API key is configured, AntiVPN logs a warning and skips IP classification
 until a valid key is supplied.
+
+The implementation follows the documented `security.vpn`, `security.proxy`,
+`security.tor` and `security.relay` boolean fields. Offline contract fixtures
+cover valid responses, malformed JSON, incomplete fields and invalid field
+types. Live VPNAPI.io classification was not performed for this release.
 Because the service request is asynchronous, a blocking result may be applied
 just after login rather than through the synchronous pre-login event. A result
 received before the player session is available is retained until the player
