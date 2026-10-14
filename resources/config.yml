@@ -32,7 +32,7 @@
 # CONFIGURATION VERSION
 # PLEASE DO NOT CHANGE THIS UNLESS YOU KNOW WHAT YOU ARE DOING OR 
 # A DEVELOPER TOLD YOU TO CHANGE THIS. PLEASE DO NOT MODIFY THIS!
-config-version: 0.0.1
+config-version: "0.0.2-BETA"
 
 # API KEY on vpnapi.io
 # Create an account and obtain a key from the official API documentation:
