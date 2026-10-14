@@ -86,6 +86,14 @@ class AntiProxy extends PluginBase implements Listener {
 		if (is_array($bypassPlayers) && in_array($username, $bypassPlayers, true)) {
 			return;
 		}
+		$bypassIps = $this->getConfig()->get("bypass-ip", []);
+		if (is_array($bypassIps)) {
+			foreach ($bypassIps as $bypassIp) {
+				if (is_string($bypassIp) && $bypassIp === $address) {
+					return;
+				}
+			}
+		}
         $key = $this->getConfig()->get("api-key", "");
         if (!is_string($key)) {
             $key = "";
@@ -110,15 +118,6 @@ class AntiProxy extends PluginBase implements Listener {
 				$response = json_decode($result->getBody(), true);
 				if(is_array($response)){
 
-                    $bypassIps = $this->getConfig()->get("bypass-ip", []);
-                    if (is_array($bypassIps)) {
-                        foreach ($bypassIps as $bypassIp) {
-                            if (is_string($bypassIp) && $bypassIp === $address) {
-                                return;
-                            }
-                        }
-                    }
-                    
 					if(isset($response["message"]) && is_string($response["message"]) && $response["message"] !== ""){
                         $this->getLogger()->notice(TF::RED . "Unable to check ip: " . TF::AQUA . $address . TF::RED . " Error: " . TF::DARK_RED . $response["message"]);
 						$retry();
