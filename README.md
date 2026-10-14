@@ -22,6 +22,8 @@ limits are controlled by that service; it is not an offline IP database.
 Transient failures and unusable responses are retried with increasing delays,
 up to three retries after the initial request. If the service remains
 unavailable, AntiVPN records the failure and does not classify that connection.
+If no API key is configured, AntiVPN logs a warning and skips IP classification
+until a valid key is supplied.
 Because the service request is asynchronous, a blocking result may be applied
 just after login rather than through the synchronous pre-login event. A result
 received before the player session is available is retained until the player
@@ -60,6 +62,7 @@ development dependencies and run:
 ```text
 composer install
 composer run test:bypass-permission
+composer run test:configuration
 composer analyse
 ```
 

@@ -10,7 +10,7 @@ permissions:
 
 jobs:
   tests:
-    name: Run bypass permission regression test
+    name: Run configuration regression tests
     runs-on: ubuntu-22.04
     steps:
       - name: Check out repository
@@ -24,6 +24,8 @@ jobs:
         run: composer install --ignore-platform-reqs --no-interaction --no-progress --prefer-dist
       - name: Run bypass permission regression test
         run: composer run test:bypass-permission
+      - name: Run missing API key regression test
+        run: composer run test:configuration
   build-phar:
     name: Build plugin PHAR
     uses: NhanAZ/DevTools/.github/workflows/build-plugin.yml@3dedda2a1f6e42885aa680aaadeebacbc0f62733

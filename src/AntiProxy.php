@@ -54,6 +54,10 @@ class AntiProxy extends PluginBase implements Listener {
     public function onEnable() : void{
         $this->getServer()->getPluginManager()->registerEvents($this, $this);
         $this->saveResource("config.yml");
+        $apiKey = $this->getConfig()->get("api-key", "");
+        if (!is_string($apiKey) || trim($apiKey) === "") {
+            $this->getLogger()->warning("No VPNAPI.io API key is configured; AntiVPN will skip IP classification.");
+        }
         $permissionName = $this->getConfig()->get("bypass-permission");
         if (!is_string($permissionName)) {
             return;
@@ -100,14 +104,10 @@ class AntiProxy extends PluginBase implements Listener {
 		};
 
 		$key = $this->getConfig()->get("api-key", "");
-		if (!is_string($key)) {
-			$key = "";
+		if (!is_string($key) || trim($key) === "") {
+			return;
 		}
-		if($key === ""){
-			$url = "https://vpnapi.io/api/$address";
-		} else {
-			$url = "https://vpnapi.io/api/$address?key=$key";
-		}
+		$url = "https://vpnapi.io/api/$address?key=" . rawurlencode(trim($key));
 		Curl::getRequest($url, 10, ["Content-Type: application/json"], function(?InternetRequestResult $result) use ($username, $address, $retry) : void {
 			if($result !== null){
 				$response = json_decode($result->getBody(), true);

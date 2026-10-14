@@ -51,7 +51,7 @@ $configPath = tempnam(sys_get_temp_dir(), "antivpn-config-");
 if($configPath === false){
 	throw new RuntimeException("Unable to create temporary AntiVPN config");
 }
-file_put_contents($configPath, "bypass-permission: antivpn.bypass\nbypass-players: []\nbypass-ip: []\n");
+file_put_contents($configPath, "api-key: \"\"\nbypass-permission: antivpn.bypass\nbypass-players: []\nbypass-ip: []\n");
 
 $plugin = (new ReflectionClass(AntiProxy::class))->newInstanceWithoutConstructor();
 $serverProperty = new ReflectionProperty(\pocketmine\plugin\PluginBase::class, "server");

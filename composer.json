@@ -16,6 +16,7 @@
     },
     "scripts": {
         "analyse": "vendor/bin/phpstan analyse -c phpstan.neon.dist",
-        "test:bypass-permission": "php tests/bypass-permission.php"
+        "test:bypass-permission": "php tests/bypass-permission.php",
+        "test:configuration": "php tests/configuration.php"
     }
 }
