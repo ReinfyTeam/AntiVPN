@@ -59,7 +59,7 @@ The generated configuration supports:
 
 ## Development
 
-The project uses [DevTools](https://github.com/NhanAZ/DevTools) to prepare and
+The project uses [DevTools](https://github.com/AxolotlBucketLabs/DevTools) to prepare and
 validate the plugin PHAR. Static analysis is run with PHPStan at its maximum
 configured level. To reproduce the repository checks, install the Composer
 development dependencies and run:
