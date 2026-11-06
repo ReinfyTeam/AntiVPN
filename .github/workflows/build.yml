@@ -16,7 +16,7 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@f548e57e544e1ff5a4c46bf1e1b8685f8e4a348a
       - name: Set up PHP environment
-        uses: shivammathur/setup-php@3bdfe21000ea9539e3a94c4f692f984b24fa97e0
+        uses: shivammathur/setup-php@9a96576163ad88ed6f6f2cbf381c5229baf95677
         with:
           php-version: '8.3'
           tools: composer:2.10.3
